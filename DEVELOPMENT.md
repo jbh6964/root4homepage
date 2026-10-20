@@ -1,6 +1,6 @@
 # ROOTFO prototype
 
-Node.js 24 / npm 11. React 19 + Vite 7. No secrets, backend, or external service required. Fonts and SVG UI studies are served locally.
+Node.js 24 / npm 11. React 19 + Vite 7. No secrets, backend or external service is required. Fonts and artwork are served locally.
 
 ```sh
 cd /workspace/root4homepage
@@ -8,16 +8,19 @@ npm ci --cache /tmp/rootfo-npm-cache
 npm run dev -- --port 5173
 ```
 
-Production: `npm run build`, then `npm run preview -- --port 4173`.
+Production: `npm run build`, then `npm run preview -- --port 4173`. Vercel uses `vercel.json` and deploys the connected `main` branch.
 
-- Content: `src/data.js`; project mockups: `public/projects/*.svg`.
-- Desktop opens with all six projects in a full-screen mosaic. Native scroll pins the viewport, expands the first project, then reveals the remaining projects sequentially. Reverse scrolling reverses the timeline. Separate image/background movement creates parallax. No wheel interception or scroll snapping.
-- Bottom numbered controls jump to each project; overview and next controls work with mouse and keyboard. Detail buttons open the project study.
-- The timeline lives in `src/ScrollGallery.jsx`, with styles in `src/gallery.css`. It uses measured transforms and opacity, updated in requestAnimationFrame.
-- Hover magnifies the image 1.03× and shows a pointer label.
-- Accessible detail dialog: focus trap, Escape, browser back, focus and scroll restoration.
-- Under 768px, or with reduced motion enabled, the pinned timeline is replaced by a regular accessible project grid. Mobile is one column; touch pointer disabled.
-- Lab notes and all projects are illustrative concepts, not customer work.
-- Contact is an explicitly labeled demo with a copyable inquiry template. Register real contact details and connect a backend separately.
+- Content: `src/data.js`. Project artwork sources: `public/projects/*.svg`; optimized 2400×1650 previews: matching `.webp` files. Update both when replacing a project image. The TV and commerce artwork contains generated concept photography, not customer material.
+- `src/ScrollGallery.jsx` owns one sticky viewport for the entire desktop site. All projects, About, Lab and Contact share the same native scroll timeline. There is no handoff to ordinary document scrolling after the gallery, wheel interception or forced snap.
+- Entry composition: six individually art-directed rectangles with different widths, heights, rotations and depth, plus four decorative detail fragments. Pointer movement applies damped depth and tilt; scroll expands the first project, then reveals the rest sequentially. Image and background layers move independently. Reverse scrolling reverses the sequence.
+- About: text, background typography, strategy document, wireframe and process rows have different parallax amounts. Process buttons update the strategy document on hover, focus and click.
+- Lab: three overlapping, independently moving editorial notes; hover and focus raise a note for reading. Each opens its example article.
+- Contact: independent type, symbol and background motion; inquiry opens an explicit demo with a copyable template. No message is sent.
+- Main navigation uses the gallery's `navigationRef` to seek the matching timeline position. Desktop narrative panels are absolute; ordinary anchor positioning is unsuitable for them. Section hashes are supported on initial load.
+- Hidden projects and chapters are inert and excluded from accessibility navigation. Detail dialogs support focus trapping, Escape, browser back, and focus/scroll restoration.
+- Under 768px, or with reduced motion enabled, the same content becomes a normal accessible document. Mobile has one project column. Touch has no custom pointer. Idle artwork does not run perpetual animations.
+- Timeline geometry and styles live in `src/ScrollGallery.jsx` and `src/gallery.css`; narrative content and process interaction live in `src/StoryContent.jsx`. The desktop composition is specifically designed for six projects; review the composition when adding more.
 
-Validated with headless Chromium at desktop 1440×900 and mobile 390×844; no horizontal overflow or console errors. All six projects fit on the initial desktop screen. Checked the pinned stage at each of the six timeline stops, direct numbered navigation, return to overview, About anchor, modal Escape and scroll restoration, plus the reduced-motion grid. Reference websites were inaccessible (network policy 403); no claim of current visual inspection.
+Browser verification: native wheel, forward/reverse scene motion, six project stops, pointer depth, all three narrative panels remaining pinned and moving with scroll, section navigation, process selection, project/notes dialogs, focus trap, Escape, browser back, scroll restoration, and inquiry demo. Desktop sizes: 1440×900, 1366×768, 1920×1080, 1024×650. Mobile widths: 320, 390, 767. Reduced motion retains all six projects and all chapters. No horizontal overflow or console/page errors in those checks.
+
+The Active Theory reference remained inaccessible (network policy 403); the current reference screen was not visually inspected. All projects and notes are labeled illustrative concepts, not actual customer work.
