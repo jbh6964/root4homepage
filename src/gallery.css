@@ -2218,3 +2218,639 @@ main {
 .simple-stories .lab-paper h3 {
   white-space: pre-line;
 }
+/* Choreography v4: reveal, settle, inspect, breathe, then transition. */
+.scene-project-button {
+  --hover-zoom: 1;
+}
+.scene-project-button:hover,
+.scene-project-button:focus-visible {
+  --hover-zoom: 1.035;
+}
+.scene-project-button img,
+.scene-project-button:hover img,
+.scene-project-button:focus-visible img {
+  left: -4%;
+  width: 108%;
+  transform: translate3d(var(--image-x, 0px), var(--image-y, 0px), 0)
+    scale(
+      calc(var(--counter-x, 1) * var(--camera-zoom, 1) * var(--hover-zoom, 1)),
+      calc(var(--counter-y, 1) * var(--camera-zoom, 1) * var(--hover-zoom, 1))
+    );
+  transition: transform 0.2s cubic-bezier(0.2, 0.6, 0.3, 1);
+}
+.film-matte {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: #101b21;
+  pointer-events: none;
+  transform: scaleY(var(--matte, 0));
+  z-index: 2;
+}
+.matte-top {
+  top: 0;
+  transform-origin: top;
+}
+.matte-bottom {
+  bottom: 0;
+  transform-origin: bottom;
+}
+.caption-copy {
+  animation: caption-arrive 0.42s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@keyframes caption-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.gallery-dots i {
+  position: relative;
+  overflow: hidden;
+}
+.gallery-dots .is-current i {
+  background: #d5d9cd;
+}
+.gallery-dots i:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.gallery-dots .is-current i:after {
+  transform: scaleX(var(--scene-progress, 0));
+}
+.gallery-dots .is-complete i:after {
+  transform: scaleX(1);
+}
+.feature-details {
+  position: absolute;
+  inset: 0;
+  z-index: 32;
+  pointer-events: none;
+  opacity: var(--detail-opacity, 0);
+}
+.feature-insight {
+  position: absolute;
+  right: 4.2%;
+  bottom: 190px;
+  width: 244px;
+  padding: 14px;
+  background: #faf9f5;
+  box-shadow: 0 12px 42px #26302526;
+  border: 1px solid #e3e5da;
+  pointer-events: auto;
+  transform: translate3d(
+      calc((1 - var(--detail-opacity, 0)) * 25px),
+      calc(
+        (1 - var(--detail-opacity, 0)) * 20px + (var(--inspect, 0) - 0.5) *
+          -12px
+      ),
+      0
+    )
+    rotate(calc((1 - var(--detail-opacity, 0)) * 3deg));
+}
+.feature-insight.insight-left {
+  right: auto;
+  left: 4.2%;
+  transform: translate3d(
+      calc((1 - var(--detail-opacity, 0)) * -25px),
+      calc(
+        (1 - var(--detail-opacity, 0)) * 20px + (var(--inspect, 0) - 0.5) * 10px
+      ),
+      0
+    )
+    rotate(calc((1 - var(--detail-opacity, 0)) * -3deg));
+}
+.insight-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 6px;
+  letter-spacing: 0.6px;
+  color: #66715a;
+  margin-bottom: 12px;
+}
+.insight-top > span:last-child {
+  color: var(--accent);
+  white-space: nowrap;
+}
+.insight-viewport {
+  height: 104px;
+  overflow: hidden;
+  position: relative;
+  background: #e1e5d8;
+}
+.insight-viewport > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.7);
+  animation: crop-arrive 0.35s ease both;
+}
+@keyframes crop-arrive {
+  from {
+    opacity: 0.25;
+    transform: scale(1.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.7);
+  }
+}
+.insight-copy {
+  animation: caption-arrive 0.3s ease both;
+}
+.insight-copy > p {
+  font-size: 8px;
+  color: #66715a;
+  margin: 12px 0 6px;
+  letter-spacing: -0.2px;
+}
+.insight-copy h3 {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: -0.35px;
+  margin: 0;
+  min-height: 38px;
+  word-break: keep-all;
+}
+.insight-detail-mark {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid #dce0d2;
+  margin-top: 12px;
+  padding-top: 9px;
+}
+.insight-detail-mark > span {
+  flex: 1;
+  font-size: 7px;
+  color: #919988;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.insight-detail-mark > span.is-past {
+  color: #46573a;
+}
+.insight-detail-mark > span > i {
+  height: 1px;
+  flex: 1;
+  background: #c0cab7;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.insight-detail-mark > span.is-past > i {
+  transform: scaleX(1);
+  transition: transform 0.35s;
+}
+.mark-form > i {
+  width: 14px;
+  height: 14px;
+  background: #7d684a;
+}
+.mark-form > i:nth-child(2) {
+  background: #bea886;
+}
+.mark-form > i:nth-child(3) {
+  background: #e3d7c1;
+}
+.mark-form > span {
+  font-size: 5px;
+  margin-left: auto;
+  flex: initial;
+  color: #66715a;
+  letter-spacing: 0.4px;
+}
+.insight-route {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.insight-route .route-base {
+  stroke: #fff;
+  stroke-width: 5;
+  opacity: 0.8;
+}
+.insight-route .route-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--inspect, 0));
+}
+.insight-route circle {
+  fill: var(--accent);
+  stroke: #fff;
+  stroke-width: 2;
+}
+.route-destination {
+  opacity: var(--inspect, 0);
+}
+.insight-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 35px;
+  color: #fff;
+  text-shadow: 0 2px 15px #0006;
+}
+.insight-finance-label {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  font-size: 6px;
+  color: #fff;
+  letter-spacing: 1px;
+  background: #3449c1;
+  padding: 5px 7px;
+}
+.project-beats {
+  position: absolute;
+  left: calc(7% + 82px);
+  bottom: 65px;
+  display: flex;
+  gap: 18px;
+  pointer-events: auto;
+}
+.project-beats > button {
+  position: relative;
+  border: 0;
+  padding: 4px 0 8px;
+  background: none;
+  font-size: 9px;
+  color: #707c61;
+  min-width: 58px;
+  text-align: left;
+}
+.project-beats > button > span {
+  font-size: 7px;
+  color: #8b957e;
+  margin-right: 6px;
+}
+.project-beats > button > i {
+  position: absolute;
+  bottom: 1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.25s;
+}
+.project-beats .is-selected {
+  color: #273b20;
+}
+.project-beats .is-selected > i {
+  transform: scaleX(1);
+}
+/* About unfolds in four readable beats. Hover, click and keyboard can inspect a step. */
+.pane-about .approach-copy h2 > span {
+  display: inline-block;
+  opacity: var(--copy-enter, 0);
+  transform: translateY(calc((1 - var(--copy-enter, 0)) * 22px));
+}
+.pane-about .approach-copy h2 > span:last-child {
+  opacity: var(--figure-enter, 0);
+  transform: translateY(calc((1 - var(--figure-enter, 0)) * 24px));
+}
+.pane-about .approach-copy > p:last-child {
+  opacity: var(--figure-enter, 0);
+}
+.pane-about .strategy-paper {
+  transform: translate3d(
+      calc(var(--phase) * -26px),
+      calc(var(--phase) * -50px + (1 - var(--figure-enter, 0)) * 40px),
+      0
+    )
+    rotate(calc(-8deg + var(--read-progress, 0) * 4deg));
+  opacity: var(--figure-enter, 0);
+}
+.pane-about .wire-paper {
+  transform: translate3d(
+      calc(var(--phase) * 35px),
+      calc(var(--phase) * 65px + (1 - var(--figure-enter, 0)) * 70px),
+      0
+    )
+    rotate(calc(10deg - var(--read-progress, 0) * 6deg));
+  opacity: var(--figure-enter, 0);
+}
+.approach-process:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(var(--read-progress, 0));
+  pointer-events: none;
+}
+.strategy-paper > strong {
+  animation: caption-arrive 0.32s ease both;
+}
+.pane-about .connecting-mark {
+  transform: translateY(calc(var(--phase) * -45px))
+    rotate(calc(var(--read-progress, 0) * 150deg));
+}
+/* Notes arrive one at a time, then keep enough space to read or open them. */
+.lab-reading-sequence {
+  position: absolute;
+  left: 7%;
+  top: 63%;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  color: #717b64;
+  z-index: 4;
+  transform: translateY(calc(var(--phase) * -50px));
+}
+.lab-reading-sequence > span {
+  font-size: 7px;
+  letter-spacing: 0.7px;
+  opacity: 0.5;
+  transition:
+    opacity 0.25s,
+    color 0.25s;
+}
+.pane-lab[data-note="0"] .lab-reading-sequence > span:nth-child(1),
+.pane-lab[data-note="1"] .lab-reading-sequence > span:nth-child(2),
+.pane-lab[data-note="2"] .lab-reading-sequence > span:nth-child(3) {
+  opacity: 1;
+  color: var(--accent);
+}
+.pane-lab .lab-paper {
+  opacity: calc(0.24 + var(--note-open, 0) * 0.76);
+}
+.pane-lab .lab-paper-0 {
+  transform: translate3d(
+      calc(var(--pointer-x) * -9px),
+      calc(
+        var(--phase) * -50px + var(--pointer-y) * 8px +
+          (1 - var(--note-open, 0)) * 65px
+      ),
+      0
+    )
+    rotate(calc(-14deg + var(--note-open, 0) * 6deg));
+}
+.pane-lab .lab-paper-1 {
+  transform: translate3d(
+      calc(var(--pointer-x) * 16px),
+      calc(
+        var(--phase) * -95px + var(--pointer-y) * 12px +
+          (1 - var(--note-open, 0)) * 90px
+      ),
+      0
+    )
+    rotate(calc(15deg - var(--note-open, 0) * 8deg));
+}
+.pane-lab .lab-paper-2 {
+  transform: translate3d(
+      calc(var(--pointer-x) * 8px),
+      calc(
+        var(--phase) * 50px + var(--pointer-y) * -9px +
+          (1 - var(--note-open, 0)) * 70px
+      ),
+      0
+    )
+    rotate(calc(-12deg + var(--note-open, 0) * 8deg));
+}
+.pane-lab .lab-paper:hover,
+.pane-lab .lab-paper:focus-visible {
+  opacity: 1;
+  z-index: 8;
+}
+.pane-lab[data-note="0"] .lab-paper-0,
+.pane-lab[data-note="1"] .lab-paper-1,
+.pane-lab[data-note="2"] .lab-paper-2 {
+  box-shadow: 0 25px 60px #30382729;
+}
+.pane-lab .lab-visual-1 i:nth-child(2) {
+  transform: translateX(calc((1 - var(--note-open, 0)) * -24px));
+}
+.pane-lab .lab-visual-1 i:nth-child(3) {
+  transform: translateX(calc((1 - var(--note-open, 0)) * -48px));
+}
+.pane-lab .lab-visual-2 > span {
+  transform: rotate(calc((1 - var(--note-open, 0)) * -10deg));
+}
+.simple-stories .lab-reading-sequence {
+  display: none;
+}
+/* Contact resolves as type → message → invitation → seal rather than a single slide. */
+.contact-copy h2 > .contact-line {
+  font: inherit;
+  font-style: normal;
+  display: block;
+  transform: none;
+  margin: 0;
+  overflow: hidden;
+  line-height: 1.28;
+}
+.contact-copy h2 > .contact-line > span {
+  display: block;
+}
+.contact-line i {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  margin-left: 5px;
+  display: inline-block;
+  transform: rotate(-8deg);
+}
+.pane-contact .contact-line:first-child > span {
+  opacity: var(--line-one, 0);
+  transform: translateY(calc((1 - var(--line-one, 0)) * 100%));
+}
+.pane-contact .contact-line:last-child > span {
+  opacity: var(--line-two, 0);
+  transform: translateY(calc((1 - var(--line-two, 0)) * 100%));
+}
+.pane-contact .contact-copy > p:not(.eyebrow) {
+  opacity: var(--message-enter, 0);
+  transform: translateY(calc((1 - var(--message-enter, 0)) * 15px));
+}
+.pane-contact .inquiry-button,
+.pane-contact .contact-copy > small {
+  opacity: var(--cta-enter, 0);
+  transform: translateY(calc((1 - var(--cta-enter, 0)) * 18px));
+}
+.pane-contact .inquiry-button:focus-visible {
+  opacity: 1;
+  transform: none;
+}
+.pane-contact .contact-orbit {
+  opacity: var(--seal-enter, 0);
+  transform: translate3d(
+      calc(var(--pointer-x) * 20px),
+      calc(var(--phase) * 80px + var(--pointer-y) * 16px),
+      0
+    )
+    rotate(calc(var(--phase) * -15deg - (1 - var(--seal-enter, 0)) * 35deg))
+    scale(calc(0.75 + var(--seal-enter, 0) * 0.25));
+}
+.pane-contact .inquiry-button:hover {
+  transform: translate3d(
+    calc(var(--pointer-x) * 5px),
+    calc(var(--pointer-y) * 3px),
+    0
+  );
+}
+@media (max-width: 1100px) {
+  .feature-insight {
+    width: 210px;
+    padding: 12px;
+    bottom: 190px;
+  }
+  .insight-viewport {
+    height: 88px;
+  }
+  .insight-copy > p {
+    font-size: 7px;
+  }
+  .insight-copy h3 {
+    font-size: 10px;
+    min-height: 32px;
+  }
+  .insight-top {
+    font-size: 5px;
+  }
+  .project-beats {
+    left: calc(7% + 73px);
+    gap: 14px;
+  }
+  .project-beats > button {
+    min-width: 50px;
+    font-size: 8px;
+  }
+  .lab-reading-sequence {
+    left: 6%;
+    top: 66%;
+  }
+}
+@media (max-height: 719px) and (min-width: 768px) {
+  .feature-insight {
+    width: 212px;
+    padding: 11px;
+    bottom: 190px;
+  }
+  .insight-viewport {
+    height: 76px;
+  }
+  .insight-copy h3 {
+    font-size: 10px;
+    min-height: 31px;
+  }
+  .insight-copy > p {
+    font-size: 7px;
+    margin-top: 9px;
+  }
+  .insight-top {
+    font-size: 5px;
+    margin-bottom: 8px;
+  }
+  .insight-detail-mark {
+    padding-top: 7px;
+    margin-top: 8px;
+  }
+  .film-matte {
+    height: 22px;
+  }
+  .lab-reading-sequence {
+    top: 66%;
+    gap: 10px;
+  }
+  .lab-reading-sequence > span {
+    font-size: 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caption-copy,
+  .insight-copy,
+  .insight-viewport > img {
+    animation: none;
+  }
+}
+.gallery-stage[data-mode="project"] .gallery-caption {
+  bottom: 100px;
+}
+.inspection-reticle {
+  position: absolute;
+  left: var(--lens-x, 50%);
+  top: var(--lens-y, 50%);
+  width: 48px;
+  height: 48px;
+  border: 1px solid #f8f7efb3;
+  box-shadow: 0 0 0 1px #304a3066;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+  transition: opacity 0.2s;
+}
+.inspection-reticle > i {
+  position: absolute;
+  background: #f8f7ef;
+  left: 50%;
+  top: 50%;
+  height: 1px;
+  width: 10px;
+  transform: translate(-50%, -50%);
+}
+.inspection-reticle > i:last-child {
+  width: 1px;
+  height: 10px;
+}
+.gallery-stage[data-mode="project"][data-inspecting="true"]
+  .scene-project-button:hover
+  .inspection-reticle {
+  opacity: var(--detail-opacity, 0);
+}
+.gallery-stage[data-inspecting="true"] .insight-viewport > img {
+  transform-origin: var(--focus-x, 50%) var(--focus-y, 50%);
+  transform: scale(2.35);
+  animation: none;
+  transition: transform 0.3s;
+}
+.gallery-stage[data-inspecting="true"] .insight-viewport:after {
+  content: "UI DETAIL";
+  position: absolute;
+  bottom: 7px;
+  left: 8px;
+  font-size: 6px;
+  letter-spacing: 0.8px;
+  color: #31432a;
+  background: #f8f7eee8;
+  padding: 4px 6px;
+}
+.pane-lab .lab-paper {
+  transition:
+    transform 0.32s cubic-bezier(0.2, 0.65, 0.3, 1),
+    opacity 0.2s,
+    box-shadow 0.3s;
+}
+.pane-lab .lab-paper:hover,
+.pane-lab .lab-paper:focus-visible {
+  --note-open: 1 !important;
+}
+/* Changing from automatic crops to the pointer lens should not restart a fade. */
+.insight-viewport > img {
+  animation: none;
+  transition: transform 0.3s;
+}
+.pane-contact:not([data-cta-ready="true"]) .inquiry-button {
+  pointer-events: none;
+}

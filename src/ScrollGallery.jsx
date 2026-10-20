@@ -8,21 +8,25 @@ import React, {
 import { projects } from "./data";
 import "./gallery.css";
 
-const clamp = (n, min = 0, max = 1) => Math.min(max, Math.max(min, n));
-const ease = (n) => {
-  const p = clamp(n);
-  return p * p * (3 - 2 * p);
-};
-const enterAt = (i) => (i === 0 ? 0.12 : 1.35 + (i - 1) * 1.2);
-const restingAt = (i) => enterAt(i) + 0.88;
-const projectEnd = restingAt(projects.length - 1) + 0.37;
-const chapters = {
-  work: 0,
-  about: projectEnd,
-  lab: projectEnd + 2.5,
-  contact: projectEnd + 5,
-};
-const END = chapters.contact + 2.2;
+import FeatureDetail from "./FeatureDetail";
+import {
+  clamp,
+  ease,
+  PROJECT_ENTRY,
+  PROJECT_SPAN,
+  STORY_ENTRY,
+  SCROLL_UNIT,
+  projectStart as enterAt,
+  projectRest as restingAt,
+  chapters,
+  chapterRest,
+  chapterLengths,
+  chapterRead,
+  inspectAt,
+  motionProfiles,
+  END,
+} from "./motion";
+
 const names = ["about", "lab", "contact"];
 const colors = [
   "#e6e4da",
@@ -111,22 +115,32 @@ export default function ScrollGallery({
     captions = useRef([]),
     pieces = useRef([]),
     panels = useRef([]);
-  const timeline = useRef({ unit: 1, local: 0 });
+  const timeline = useRef({
+    unit: 1,
+    local: 0,
+    visual: null,
+    clock: 0,
+    snap: false,
+  });
   const pointer = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
-  const [scene, setScene] = useState({ current: -1, section: "work" });
-  const { current, section } = scene;
+  const [scene, setScene] = useState({
+    current: -1,
+    section: "work",
+    insightStep: 0,
+    storyStep: 0,
+    detailsVisible: false,
+  });
+  const { current, section, insightStep, storyStep, detailsVisible } = scene;
 
   const goTo = (value, smooth = true) => {
     onPointerLeave();
     if (simple) {
       const id = typeof value === "number" ? "work" : value;
-      document
-        .getElementById(id)
-        ?.scrollIntoView({
-          behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-            ? "instant"
-            : "smooth",
-        });
+      document.getElementById(id)?.scrollIntoView({
+        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+      });
       return;
     }
     const local =
@@ -136,8 +150,9 @@ export default function ScrollGallery({
           : restingAt(value)
         : value === "work"
           ? 0
-          : chapters[value] + 0.95;
+          : chapterRest(value);
     const top = root.current.getBoundingClientRect().top + scrollY;
+    if (!smooth) timeline.current.snap = true;
     window.scrollTo({
       top: top + local * timeline.current.unit,
       behavior: smooth ? "smooth" : "instant",
@@ -164,25 +179,51 @@ export default function ScrollGallery({
       const p = pointer.current;
       p.x += (p.tx - p.x) * 0.09;
       p.y += (p.ty - p.y) * 0.09;
-      const local = clamp(
+      const raw = clamp(
         -root.current.getBoundingClientRect().top / timeline.current.unit,
         0,
         END,
       );
+      const now = performance.now();
+      const dt = clamp(now - timeline.current.clock, 8, 40);
+      const previous = timeline.current.visual;
+      const local =
+        previous === null || timeline.current.snap
+          ? raw
+          : previous + (raw - previous) * (1 - Math.exp(-dt / 115));
+      timeline.current.snap = false;
+      timeline.current.clock = now;
+      timeline.current.visual = Math.abs(raw - local) < 0.0003 ? raw : local;
       timeline.current.local = local;
-      const overview = 1 - ease((local - 0.12) / 0.65);
-      const storyEnter = ease((local - chapters.about) / 0.85);
-      let active = local < 0.54 ? -1 : 0;
+      const overview = 1 - ease((local - 0.35) / 0.75);
+      const storyEnter = ease((local - chapters.about) / STORY_ENTRY);
+      let active = local < 0.35 + PROJECT_ENTRY * 0.5 ? -1 : 0;
       for (let i = 1; i < projects.length; i++)
-        if (local >= enterAt(i) + 0.38) active = i;
+        if (local >= enterAt(i) + PROJECT_ENTRY * 0.5) active = i;
       let activeSection = "work";
       names.forEach((name) => {
-        if (local >= chapters[name] + 0.32) activeSection = name;
+        if (local >= chapters[name] + STORY_ENTRY * 0.5) activeSection = name;
       });
+      const insight = active >= 0 ? inspectAt(local, active) : 0;
+      const nextProject =
+        active < projects.length - 1 ? enterAt(active + 1) : chapters.about;
+      const outgoing =
+        active >= 0 ? ease((local - nextProject) / PROJECT_ENTRY) : 0;
+      const detailOpacity =
+        active < 0
+          ? 0
+          : ease((local - enterAt(active) - 0.94) / 0.32) * (1 - outgoing);
+      const nextScene = {
+        current: active,
+        section: activeSection,
+        insightStep: Math.min(2, Math.floor(insight * 3)),
+        storyStep: Math.min(3, Math.floor(chapterRead(local, "about") * 4)),
+        detailsVisible: detailOpacity > 0.68 && activeSection === "work",
+      };
       setScene((prev) =>
-        prev.current === active && prev.section === activeSection
+        Object.keys(nextScene).every((key) => nextScene[key] === prev[key])
           ? prev
-          : { current: active, section: activeSection },
+          : nextScene,
       );
       const el = stage.current;
       const world = el.querySelector(".work-world");
@@ -197,13 +238,27 @@ export default function ScrollGallery({
       el.style.setProperty("--pointer-x", p.x);
       el.style.setProperty("--pointer-y", p.y);
       el.style.setProperty("--floating", overview);
+      el.style.setProperty("--detail-opacity", detailOpacity);
+      el.style.setProperty("--inspect", insight);
+      el.style.setProperty(
+        "--scene-progress",
+        active < 0 ? 0 : clamp((local - enterAt(active)) / PROJECT_SPAN),
+      );
+      el.dataset.phase =
+        active < 0
+          ? "overview"
+          : local < enterAt(active) + PROJECT_ENTRY
+            ? "enter"
+            : insight < 1
+              ? "explore"
+              : "hold";
       cards.current.forEach((card, i) => {
         const tile = tiles[i];
-        const expansion = ease((local - enterAt(i)) / 0.85);
+        const expansion = ease((local - enterAt(i)) / PROJECT_ENTRY);
         const exit =
           i === projects.length - 1
             ? storyEnter
-            : ease((local - enterAt(i + 1)) / 0.85);
+            : ease((local - enterAt(i + 1)) / PROJECT_ENTRY);
         let sx =
           (tile.w / target.w + (1 - tile.w / target.w) * expansion) *
           (1 - exit * 0.08);
@@ -242,9 +297,23 @@ export default function ScrollGallery({
         card.style.setProperty("--counter-y", Math.max(sx, sy) / sy);
         card.style.setProperty("--tilt-x", `${-p.y * 3 * overview}deg`);
         card.style.setProperty("--tilt-y", `${p.x * 4 * overview}deg`);
+        const profile = motionProfiles[i % motionProfiles.length];
+        const inspection = inspectAt(local, i);
+        card.style.setProperty(
+          "--image-x",
+          `${(inspection - 0.5) * profile.panX * expansion}px`,
+        );
         card.style.setProperty(
           "--image-y",
-          `${clamp((local - restingAt(i)) * (i % 2 ? -18 : 22), -24, 24)}px`,
+          `${(inspection - 0.5) * profile.panY * expansion}px`,
+        );
+        card.style.setProperty(
+          "--camera-zoom",
+          1 + inspection * profile.zoom * expansion,
+        );
+        card.style.setProperty(
+          "--matte",
+          (1 - ease(inspection / 0.4)) * expansion,
         );
         card.style.setProperty("--corner-opacity", expansion);
         const caption = captions.current[i];
@@ -259,21 +328,53 @@ export default function ScrollGallery({
       });
       panels.current.forEach((panel, i) => {
         const start = chapters[names[i]];
-        const enter = ease((local - start) / 0.85);
+        const enter = ease((local - start) / STORY_ENTRY);
         const exit =
-          i === 2 ? 0 : ease((local - chapters[names[i + 1]]) / 0.85);
-        const phase = clamp((local - start) / 2.5, 0, 1.5);
+          i === 2 ? 0 : ease((local - chapters[names[i + 1]]) / STORY_ENTRY);
+        const phase = clamp((local - start) / chapterLengths[names[i]], 0, 1.5);
         panel.style.opacity = enter * (1 - exit);
         panel.style.transform = `translate3d(${exit * -width * 0.035}px, ${(1 - enter) * height * 0.14 - exit * height * 0.1}px, 0)`;
         panel.style.setProperty("--phase", phase);
         panel.style.setProperty("--enter", enter);
         panel.style.setProperty("--exit", exit);
+        const elapsed = local - start;
+        const read = chapterRead(local, names[i]);
+        panel.style.setProperty("--read-progress", read);
+        panel.style.setProperty("--copy-enter", ease((elapsed - 0.15) / 0.55));
+        panel.style.setProperty(
+          "--figure-enter",
+          ease((elapsed - 0.55) / 0.65),
+        );
+        if (i === 1) {
+          panel.dataset.note = Math.min(2, Math.floor(read * 3));
+          panel.querySelectorAll(".lab-paper").forEach((paper, index) => {
+            paper.style.setProperty(
+              "--note-open",
+              ease((read - index * 0.23) / 0.28),
+            );
+          });
+        }
+        if (i === 2) {
+          panel.style.setProperty("--line-one", ease((elapsed - 0.1) / 0.5));
+          panel.style.setProperty("--line-two", ease((elapsed - 0.5) / 0.55));
+          panel.style.setProperty(
+            "--message-enter",
+            ease((elapsed - 0.9) / 0.5),
+          );
+          panel.style.setProperty("--cta-enter", ease((elapsed - 1.3) / 0.5));
+          panel.dataset.ctaReady = String(ease((elapsed - 1.3) / 0.5) > 0.95);
+          panel.style.setProperty("--seal-enter", ease((elapsed - 1) / 0.85));
+        }
         const accessible = activeSection === names[i];
         panel.inert = !accessible;
         panel.style.pointerEvents = accessible ? "auto" : "none";
         panel.setAttribute("aria-hidden", !accessible);
       });
-      if (Math.abs(p.x - p.tx) + Math.abs(p.y - p.ty) > 0.001) schedule();
+      if (
+        Math.abs(p.x - p.tx) + Math.abs(p.y - p.ty) > 0.001 ||
+        Math.abs(raw - timeline.current.visual) > 0.0003
+      )
+        schedule();
     };
     const measure = () => {
       if (frame) cancelAnimationFrame(frame);
@@ -299,7 +400,8 @@ export default function ScrollGallery({
       });
       const h = Math.max(200, Math.min(height - 276, (width * 0.82) / 1.65));
       target = { w: h * 1.65, h, x: (width - h * 1.65) / 2, y: 100 };
-      timeline.current.unit = height * 0.9;
+      timeline.current.unit = height * SCROLL_UNIT;
+      timeline.current.visual = null;
       root.current.style.height = `${height + END * timeline.current.unit}px`;
       cards.current.forEach((card) => {
         card.style.width = `${target.w}px`;
@@ -317,11 +419,24 @@ export default function ScrollGallery({
     const move = (e) => {
       pointer.current.tx = (e.clientX / width - 0.5) * 2;
       pointer.current.ty = (e.clientY / height - 0.5) * 2;
+      const button = e.target.closest?.(".scene-project-button");
+      const inspecting = !!button && stage.current.dataset.mode === "project";
+      stage.current.dataset.inspecting = String(inspecting);
+      if (inspecting) {
+        const box = button.getBoundingClientRect();
+        const x = `${clamp((e.clientX - box.left) / box.width) * 100}%`;
+        const y = `${clamp((e.clientY - box.top) / box.height) * 100}%`;
+        button.style.setProperty("--lens-x", x);
+        button.style.setProperty("--lens-y", y);
+        stage.current.style.setProperty("--focus-x", x);
+        stage.current.style.setProperty("--focus-y", y);
+      }
       schedule();
     };
     const leave = () => {
       pointer.current.tx = 0;
       pointer.current.ty = 0;
+      stage.current.dataset.inspecting = "false";
       schedule();
     };
     const resize = new ResizeObserver(measure);
@@ -332,7 +447,7 @@ export default function ScrollGallery({
     const element = stage.current;
     measure();
     const hash = location.hash.slice(1);
-    if (chapters[hash] !== undefined && hash !== "work") goTo(hash, false);
+    if (names.includes(hash)) goTo(hash, false);
     return () => {
       resize.disconnect();
       removeEventListener("scroll", schedule);
@@ -472,6 +587,22 @@ export default function ScrollGallery({
                         height="1100"
                         loading={i > 1 ? "lazy" : "eager"}
                       />
+                      <span className="inspection-reticle" aria-hidden="true">
+                        <i />
+                        <i />
+                      </span>
+                      {i === 2 && (
+                        <>
+                          <span
+                            className="film-matte matte-top"
+                            aria-hidden="true"
+                          />
+                          <span
+                            className="film-matte matte-bottom"
+                            aria-hidden="true"
+                          />
+                        </>
+                      )}
                       <span className="scene-card-corner">
                         {p.brand.toUpperCase()}
                         <span>↗</span>
@@ -525,7 +656,7 @@ export default function ScrollGallery({
                   0{current + 1}
                   <small> / 06</small>
                 </span>
-                <div>
+                <div key={current} className="caption-copy">
                   <p>{projects[current].type}</p>
                   <h2>{projects[current].name}</h2>
                   <span>{projects[current].scope}</span>
@@ -539,6 +670,15 @@ export default function ScrollGallery({
               </>
             )}
           </div>
+          {current >= 0 && (
+            <FeatureDetail
+              key={current}
+              project={projects[current]}
+              index={current}
+              autoStep={insightStep}
+              visible={detailsVisible}
+            />
+          )}
           <p className="gallery-overview-note">구성 예시 · CONCEPT PROJECTS</p>
           <div className="gallery-bottom">
             <button
@@ -556,7 +696,13 @@ export default function ScrollGallery({
               {projects.map((p, i) => (
                 <button
                   key={p.id}
-                  className={current === i ? "is-current" : ""}
+                  className={
+                    current === i
+                      ? "is-current"
+                      : current > i
+                        ? "is-complete"
+                        : ""
+                  }
                   aria-current={current === i ? "step" : undefined}
                   aria-label={`${i + 1}번 ${p.brand} 프로젝트로 이동`}
                   onClick={() => goTo(i)}
@@ -586,7 +732,9 @@ export default function ScrollGallery({
               key={names[i]}
               ref={(el) => (panels.current[i] = el)}
             >
-              {child}
+              {i === 0
+                ? React.cloneElement(child, { scrollStep: storyStep })
+                : child}
             </div>
           ))}
         </div>

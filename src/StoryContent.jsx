@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { notes } from "./data";
 
 const process = [
@@ -32,8 +32,11 @@ const process = [
   },
 ];
 
-export function AboutScene() {
-  const [step, setStep] = useState(0);
+export function AboutScene({ scrollStep }) {
+  const [manual, setManual] = useState(null);
+  const [hover, setHover] = useState(null);
+  const step = hover ?? manual ?? scrollStep ?? 0;
+  useEffect(() => setManual(null), [scrollStep]);
   return (
     <section
       id="about"
@@ -75,7 +78,7 @@ export function AboutScene() {
             <span>↗</span>
           </div>
           <small>FROM THE RIGHT QUESTION</small>
-          <strong>
+          <strong key={step}>
             {process[step].word}
             <span>?</span>
           </strong>
@@ -118,14 +121,21 @@ export function AboutScene() {
         </div>
         <span className="connecting-mark">✳︎</span>
       </div>
-      <div className="approach-process" aria-label="루트포의 작업 과정">
+      <div
+        className="approach-process"
+        aria-label="루트포의 작업 과정"
+        onPointerLeave={() => setHover(null)}
+      >
         {process.map((item, i) => (
           <button
             key={item.en}
             className={step === i ? "is-selected" : ""}
-            onPointerEnter={() => setStep(i)}
-            onFocus={() => setStep(i)}
-            onClick={() => setStep(i)}
+            onPointerEnter={(e) => {
+              if (e.pointerType === "mouse") setHover(i);
+            }}
+            onFocus={() => setHover(i)}
+            onBlur={() => setHover(null)}
+            onClick={() => setManual(i)}
             aria-pressed={step === i}
           >
             <span className="process-index">
@@ -173,6 +183,11 @@ export function LabScene({ onOpen }) {
           <br />
           고객 프로젝트와 구분되는 루트포의 실험 노트입니다.
         </p>
+      </div>
+      <div className="lab-reading-sequence" aria-hidden="true">
+        <span>01 / AI IN PRACTICE</span>
+        <span>02 / MOTION STUDY</span>
+        <span>03 / BETTER QUESTIONS</span>
       </div>
       <div className="lab-watermark" aria-hidden="true">
         Curiosity
@@ -263,9 +278,14 @@ export function ContactScene({ onContact, contact, contactContent, onTop }) {
           EVERY GOOD PROJECT STARTS WITH A CONVERSATION.
         </p>
         <h2 id="contact-title">
-          다음의 경험,
-          <br />
-          함께 만들까요<span>?</span>
+          <span className="contact-line">
+            <span>다음의 경험,</span>
+          </span>
+          <span className="contact-line">
+            <span>
+              함께 만들까요<i>?</i>
+            </span>
+          </span>
         </h2>
         <p>
           만들고 싶은 서비스나 현재 고민을 알려주세요.
