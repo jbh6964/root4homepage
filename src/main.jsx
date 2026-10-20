@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "@fontsource/noto-sans-kr/400.css";
 import "@fontsource/noto-sans-kr/500.css";
@@ -8,6 +8,9 @@ import "@fontsource/dm-sans/500.css";
 import "@fontsource/dm-sans/700.css";
 import "./style.css";
 import ScrollGallery from "./ScrollGallery";
+import Pages, { resolvePage } from "./Pages";
+import DetailBody from "./DetailBody";
+import { projects, notes } from "./data";
 import { AboutScene, LabScene, ContactScene } from "./StoryContent";
 
 function Modal({ item, onClose }) {
@@ -55,76 +58,16 @@ function Modal({ item, onClose }) {
         className="modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title"
+        aria-labelledby="detail-title"
         ref={ref}
       >
         <div className="modal-top">
-          <span>ROOTFO / {item.id ? "PROJECT STUDY" : "NOTES"}</span>
+          <span>Root4 / {item.id ? "PROJECT STUDY" : "NOTES"}</span>
           <button onClick={onClose} aria-label="상세 닫기">
             닫기 <span>×</span>
           </button>
         </div>
-        <p className="eyebrow">
-          {item.id
-            ? "구성 예시 · CONCEPT PROJECT"
-            : "예시 콘텐츠 · LAB / NOTES"}
-        </p>
-        <h2 id="modal-title">{item.name || item.title}</h2>
-        {item.id ? (
-          <>
-            <p className="modal-desc">{item.description}</p>
-            <img
-              className="detail-image"
-              src={`/projects/${item.id}.svg`}
-              alt={`${item.brand} UI 디자인 목업`}
-            />
-            <div className="detail-columns">
-              <h3>우리가 설계한 범위</h3>
-              <div>
-                <p>
-                  아래는 본 프로토타입에서 제안하는 작업 범위 예시입니다. 실제
-                  고객 프로젝트나 수행 실적이 아닙니다.
-                </p>
-                {item.work.map((w, i) => (
-                  <p className="scope-line" key={w}>
-                    <span>0{i + 1}</span>
-                    {w}
-                  </p>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className={`note-art ${item.art}`} aria-hidden="true">
-              {item.art === "ai" ? (
-                <>
-                  <span>Human</span>
-                  <i>×</i>
-                  <span>AI</span>
-                </>
-              ) : item.art === "motion" ? (
-                <>
-                  <i />
-                  <i />
-                  <i />
-                </>
-              ) : (
-                <span>Why?</span>
-              )}
-            </div>
-            <p className="modal-desc">{item.text}</p>
-            <p>
-              이 글은 루트포의 탐구 방향을 보여주는 예시 콘텐츠입니다. 실험
-              결과나 실제 수행 사례로 제시되지 않습니다.
-            </p>
-            <p>
-              질문을 정리하고, 작은 프로토타입을 만들고, 사람의 관점에서 다시
-              검토합니다. 도구보다 중요한 것은 경험을 이해하는 일이라고
-              생각합니다.
-            </p>
-          </>
-        )}
+        <DetailBody item={item} />
         <button className="text-link" onClick={onClose}>
           목록으로 돌아가기 ↗
         </button>
@@ -168,11 +111,23 @@ function Contact({ close }) {
     </div>
   );
 }
+function historyItem(state) {
+  const modal = state?.root4Modal;
+  return modal?.kind === "project"
+    ? (projects.find((p) => p.id === modal.id) ?? null)
+    : modal?.kind === "note"
+      ? (notes.find((n) => n.slug === modal.id) ?? null)
+      : null;
+}
+
 function App() {
-  const [selected, setSelected] = useState(null),
-    [contact, setContact] = useState(false),
-    [active, setActive] = useState("work");
+  const page = resolvePage(location.pathname);
+  const home = page.kind === "home";
+  const [selected, setSelected] = useState(() => historyItem(history.state));
+  const [contact, setContact] = useState(false);
+  const [active, setActive] = useState("work");
   const cursor = useRef(null);
+  const navigation = useRef(null);
   const hideCursor = () => cursor.current?.classList.remove("visible");
   const moveCursor = (e) => {
     if (e.pointerType !== "mouse") return;
@@ -180,11 +135,49 @@ function App() {
     cursor.current.classList.add("visible");
   };
   const close = React.useCallback(() => {
-    if (history.state?.rootfo) history.back();
+    if (history.state?.root4Modal) history.back();
     else setSelected(null);
   }, []);
-  const navigation = useRef(null);
+
+  useLayoutEffect(() => {
+    document.title = page.title;
+    // Document navigation keeps browser link behavior and restores the gallery on Back.
+    const key = () => `root4:scroll:${location.pathname}${location.search}`;
+    const save = () => {
+      const y =
+        document.body.style.position === "fixed"
+          ? -(parseFloat(document.body.style.top) || 0)
+          : window.scrollY;
+      try {
+        sessionStorage.setItem(key(), String(y));
+      } catch {
+        /* Storage may be disabled. */
+      }
+    };
+    if (
+      performance.getEntriesByType("navigation")[0]?.type === "back_forward"
+    ) {
+      let saved;
+      try {
+        saved = sessionStorage.getItem(key());
+      } catch {
+        /* Use native restoration. */
+      }
+      if (
+        saved !== null &&
+        saved !== undefined &&
+        Number.isFinite(Number(saved))
+      ) {
+        window.scrollTo({ top: Number(saved), behavior: "instant" });
+        window.dispatchEvent(new Event("root4:restore"));
+      }
+    }
+    addEventListener("pagehide", save);
+    return () => removeEventListener("pagehide", save);
+  }, []);
+
   useEffect(() => {
+    if (!home) return;
     const observer = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
@@ -210,79 +203,87 @@ function App() {
       observer.disconnect();
       resize.disconnect();
     };
+  }, [home]);
+  useEffect(() => {
+    const pop = (e) => setSelected(historyItem(e.state));
+    addEventListener("popstate", pop);
+    return () => removeEventListener("popstate", pop);
   }, []);
-  const navigate = (name) => {
-    navigation.current?.navigate(name);
-    history.replaceState(
-      history.state,
+  const open = (item) => {
+    history.pushState(
+      {
+        ...history.state,
+        root4Modal: {
+          kind: item.id ? "project" : "note",
+          id: item.id || item.slug,
+        },
+      },
       "",
-      name === "work" ? "#work" : `#${name}`,
     );
     hideCursor();
+    setSelected(item);
   };
-  useEffect(() => {
-    const fn = () => setSelected(null);
-    addEventListener("popstate", fn);
-    return () => removeEventListener("popstate", fn);
-  }, []);
-  const open = (p) => {
-    history.pushState({ rootfo: true }, "");
-    hideCursor();
-    setSelected(p);
-  };
+  const activeNav = home ? active : page.nav;
+  const contactContent = <Contact close={() => setContact(false)} />;
   return (
     <>
-      <a href="#work" className="skip">
-        프로젝트 바로가기
+      <a href="#main-content" className="skip">
+        본문 바로가기
       </a>
-      <header className={`site-header theme-${active}`}>
-        <a
-          className="logo"
-          href="#work"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate("work");
-          }}
-          aria-label="ROOTFO 홈"
-        >
-          ROOTFO<span className="logo-mark">✳</span>
+      <header className={`site-header theme-${activeNav || "work"}`}>
+        <a className="logo" href="/" aria-label="Root4 홈">
+          Root4<span className="logo-mark">✳</span>
         </a>
         <nav aria-label="주 메뉴">
-          {["Work", "About", "Lab", "Contact"].map((n) => (
-            <a
-              key={n}
-              href={`#${n.toLowerCase()}`}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(n.toLowerCase());
-              }}
-              className={active === n.toLowerCase() ? "active" : ""}
-            >
-              {n}
-            </a>
-          ))}
+          {["Work", "About", "Lab", "Contact"].map((name) => {
+            const current = activeNav === name.toLowerCase();
+            return (
+              <a
+                key={name}
+                href={`/${name.toLowerCase()}`}
+                className={current ? "active" : ""}
+                aria-current={
+                  current ? (home ? "location" : "page") : undefined
+                }
+              >
+                {name}
+              </a>
+            );
+          })}
         </nav>
         <span className="header-note">
           Seoul, KR <span className="status-dot" />
         </span>
       </header>
-      <main id="top">
-        <ScrollGallery
-          navigationRef={navigation}
-          onSectionChange={setActive}
-          onOpen={open}
-          onPointerMove={moveCursor}
-          onPointerLeave={hideCursor}
-        >
-          <AboutScene />
-          <LabScene onOpen={open} />
-          <ContactScene
-            onContact={() => setContact(!contact)}
+      <main id="main-content" tabIndex={-1}>
+        {home ? (
+          <ScrollGallery
+            navigationRef={navigation}
+            onSectionChange={setActive}
+            onOpen={open}
+            onPointerMove={moveCursor}
+            onPointerLeave={hideCursor}
+          >
+            <AboutScene />
+            <LabScene onOpen={open} />
+            <ContactScene
+              onContact={() => setContact(!contact)}
+              contact={contact}
+              contactContent={contactContent}
+              onTop={() => {
+                navigation.current?.navigate("work");
+                hideCursor();
+              }}
+            />
+          </ScrollGallery>
+        ) : (
+          <Pages
+            page={page}
             contact={contact}
-            contactContent={<Contact close={() => setContact(false)} />}
-            onTop={() => navigate("work")}
+            onContact={() => setContact(!contact)}
+            contactContent={contactContent}
           />
-        </ScrollGallery>
+        )}
       </main>
       <div className="custom-cursor" ref={cursor} aria-hidden="true">
         View project ↗

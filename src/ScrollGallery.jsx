@@ -439,6 +439,11 @@ export default function ScrollGallery({
       stage.current.dataset.inspecting = "false";
       schedule();
     };
+    const restore = () => {
+      timeline.current.snap = true;
+      update();
+    };
+    addEventListener("root4:restore", restore);
     const resize = new ResizeObserver(measure);
     resize.observe(stage.current);
     addEventListener("scroll", schedule, { passive: true });
@@ -450,6 +455,7 @@ export default function ScrollGallery({
     if (names.includes(hash)) goTo(hash, false);
     return () => {
       resize.disconnect();
+      removeEventListener("root4:restore", restore);
       removeEventListener("scroll", schedule);
       element.removeEventListener("pointermove", move);
       element.removeEventListener("pointerleave", leave);
@@ -470,7 +476,7 @@ export default function ScrollGallery({
           aria-label="프로젝트 갤러리"
         >
           <div className="simple-heading">
-            <p className="eyebrow">ROOTFO — INDEPENDENT DESIGN STUDIO</p>
+            <p className="eyebrow">Root4 — INDEPENDENT DESIGN STUDIO</p>
             <h1>
               경험을 설계하고,
               <br />
@@ -526,7 +532,7 @@ export default function ScrollGallery({
       >
         <div className="work-world">
           <div className="gallery-background" aria-hidden="true">
-            ROOTFO
+            Root4
           </div>
           <div className="gallery-heading">
             <div>
@@ -552,7 +558,7 @@ export default function ScrollGallery({
               <br />
               <i>motion.</i>
             </span>
-            <small>ROOTFO, SEOUL.</small>
+            <small>Root4, SEOUL.</small>
           </div>
           <div className="gallery-topline">
             <span>

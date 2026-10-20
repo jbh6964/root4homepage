@@ -66,7 +66,7 @@ export function AboutScene({ scrollStep }) {
         <p>
           기획은 방향을 찾고, 디자인은 가능성을 구체화합니다.
           <br />
-          루트포는 처음부터 끝까지 함께 고민하며
+          Root4는 처음부터 끝까지 함께 고민하며
           <br />
           서비스에 꼭 필요한 답을 찾아갑니다.
         </p>
@@ -74,7 +74,7 @@ export function AboutScene({ scrollStep }) {
       <div className="approach-visual" aria-hidden="true">
         <div className="strategy-paper">
           <div className="paper-top">
-            <span>ROOTFO / WORKING DOCUMENT</span>
+            <span>Root4 / WORKING DOCUMENT</span>
             <span>↗</span>
           </div>
           <small>FROM THE RIGHT QUESTION</small>
@@ -97,7 +97,7 @@ export function AboutScene({ scrollStep }) {
         </div>
         <div className="wire-paper">
           <div className="wire-nav">
-            <b>rootfo.</b>
+            <b>Root4.</b>
             <span>— —</span>
           </div>
           <div className="wire-title" />
@@ -123,7 +123,7 @@ export function AboutScene({ scrollStep }) {
       </div>
       <div
         className="approach-process"
-        aria-label="루트포의 작업 과정"
+        aria-label="Root4의 작업 과정"
         onPointerLeave={() => setHover(null)}
       >
         {process.map((item, i) => (
@@ -181,7 +181,7 @@ export function LabScene({ onOpen }) {
         <p>
           새로운 도구를 이해하고, 익숙한 방식에 질문합니다.
           <br />
-          고객 프로젝트와 구분되는 루트포의 실험 노트입니다.
+          고객 프로젝트와 구분되는 Root4의 실험 노트입니다.
         </p>
       </div>
       <div className="lab-reading-sequence" aria-hidden="true">
@@ -202,7 +202,7 @@ export function LabScene({ onOpen }) {
             onClick={() => onOpen(note)}
           >
             <div className="lab-paper-top">
-              <span>ROOTFO NOTES / 0{i + 1}</span>
+              <span>Root4 NOTES / 0{i + 1}</span>
               <span>↗</span>
             </div>
             <div className={`lab-visual lab-visual-${i}`} aria-hidden="true">
@@ -270,7 +270,7 @@ export function ContactScene({ onContact, contact, contactContent, onTop }) {
       </div>
       <div className="contact-orbit" aria-hidden="true">
         <div />
-        <span>R</span>
+        <span>4</span>
         <i>↗</i>
       </div>
       <div className="contact-copy">
@@ -302,17 +302,26 @@ export function ContactScene({ onContact, contact, contactContent, onTop }) {
       )}
       <div className="contact-signature">
         <a
-          href="#work"
+          href="/"
           onClick={(e) => {
-            e.preventDefault();
-            onTop();
+            if (
+              onTop &&
+              !e.metaKey &&
+              !e.ctrlKey &&
+              !e.shiftKey &&
+              !e.altKey &&
+              e.button === 0
+            ) {
+              e.preventDefault();
+              onTop();
+            }
           }}
           className="logo"
         >
-          ROOTFO<span className="logo-mark">✳</span>
+          Root4<span className="logo-mark">✳</span>
         </a>
         <span>기획과 디자인으로, 더 나은 경험을.</span>
-        <span>© {new Date().getFullYear()} ROOTFO</span>
+        <span>© {new Date().getFullYear()} Root4</span>
       </div>
     </section>
   );
