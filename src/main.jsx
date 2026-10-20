@@ -1,6 +1,6 @@
 import React, {useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {projects,notes} from './data';
+import {notes} from './data';
 import '@fontsource/noto-sans-kr/400.css';
 import '@fontsource/noto-sans-kr/500.css';
 import '@fontsource/noto-sans-kr/700.css';
@@ -8,6 +8,7 @@ import '@fontsource/dm-sans/400.css';
 import '@fontsource/dm-sans/500.css';
 import '@fontsource/dm-sans/700.css';
 import './style.css';
+import ScrollGallery from './ScrollGallery';
 
 function Modal({item,onClose}){
  const ref=useRef();
@@ -34,20 +35,16 @@ function App(){
  const [cursor,setCursor]=useState({x:0,y:0,visible:false});
  const close=React.useCallback(()=>{if(history.state?.rootfo)history.back();else setSelected(null)},[]);
  useEffect(()=>{
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');observer.unobserve(e.target)}}),{threshold:.08});
   document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
   const sections=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)setActive(e.target.id)}),{rootMargin:'-15% 0px -60% 0px'});
   document.querySelectorAll('main > section[id]').forEach(el=>sections.observe(el));
-  let frame=0;const update=()=>{frame=0;const small=innerWidth<768||reduced.matches;document.querySelectorAll('.project-frame').forEach((el,i)=>{const box=el.getBoundingClientRect();if(box.bottom>0&&box.top<innerHeight){const y=small?0:(innerHeight/2-box.top-box.height/2)*(i%2?.055:.085);el.style.setProperty('--parallax',`${Math.max(-35,Math.min(35,y))}px`)}});document.querySelector('.ghost-type').style.transform=`translateX(${small?0:Math.min(scrollY*.04,80)}px)`};
-  const scroll=()=>{if(!frame)frame=requestAnimationFrame(update)};addEventListener('scroll',scroll,{passive:true});update();
-  return()=>{observer.disconnect();sections.disconnect();removeEventListener('scroll',scroll);cancelAnimationFrame(frame)};
+  return()=>{observer.disconnect();sections.disconnect()};
  },[]);
  useEffect(()=>{const fn=()=>setSelected(null);addEventListener('popstate',fn);return()=>removeEventListener('popstate',fn)},[]);
  const open=p=>{history.pushState({rootfo:true},'');setCursor(c=>({...c,visible:false}));setSelected(p)};
- return <><a href="#work" className="skip">프로젝트 바로가기</a><header><a className="logo" href="#top" aria-label="ROOTFO 홈">ROOTFO<span className="logo-mark">✳</span></a><nav aria-label="주 메뉴">{['Work','About','Lab','Contact'].map(n=><a key={n} href={`#${n.toLowerCase()}`} className={active===n.toLowerCase()?'active':''}>{n}</a>)}</nav><span className="header-note">Seoul, KR <span className="status-dot"/></span></header>
- <main id="top"><section className="intro"><div className="intro-top"><p className="eyebrow"><span className="status-dot"/> INDEPENDENT UX / UI DESIGN STUDIO</p><span className="intro-index">좋은 경험의 시작, 루트포</span></div><h1>경험을 설계하고,<br/><span>디자인으로 완성합니다.</span><i className="hero-asterisk" aria-hidden="true">✳</i></h1><div className="intro-bottom"><p>기획자와 디자이너가 함께, 서비스의 본질부터.<br/>복잡한 문제를 명확하게 정리하고 더 나은 경험으로 연결합니다.</p><a href="#work" className="scroll-link">우리의 작업 살펴보기 <span>↓</span></a></div></section>
- <section className="work" id="work"><div className="section-bar"><h2>Selected Work <sup>(06)</sup></h2><span>기획에서 디자인까지, 함께 만든 경험</span><span className="example">구성 예시 · CONCEPT PROJECTS</span></div><div className="project-grid">{projects.map((p,i)=><article className={`project project-${i} reveal`} key={p.id}><button className="project-button" onClick={()=>open(p)} aria-label={`${p.brand} — ${p.name} 상세 보기`} onPointerMove={e=>setCursor({x:e.clientX,y:e.clientY,visible:e.pointerType==='mouse'})} onPointerLeave={()=>setCursor(c=>({...c,visible:false}))} onBlur={()=>setCursor(c=>({...c,visible:false}))}><div className="project-frame"><div className="project-art"><img src={`/projects/${p.id}.svg`} width="1200" height="1000" alt={`${p.brand} ${p.type} UI 목업`} loading={i>1?'lazy':'eager'}/></div><span className="image-label">{p.brand.toUpperCase()} <span>↗</span></span><span className="project-number">0{i+1} / 06</span></div><div className="project-meta"><div><span className="project-type">{p.type}</span><h3>{p.name}<span>↗</span></h3><p>{p.scope}</p></div><span className="year">{p.year}</span></div></button></article>)}</div><div className="work-end"><span>서로 다른 문제, 하나의 방향.</span><p>사람을 향하는 경험을 만듭니다.</p><span>↙</span></div></section>
+ return <><a href="#work" className="skip">프로젝트 바로가기</a><header className="site-header"><a className="logo" href="#top" aria-label="ROOTFO 홈">ROOTFO<span className="logo-mark">✳</span></a><nav aria-label="주 메뉴">{['Work','About','Lab','Contact'].map(n=><a key={n} href={`#${n.toLowerCase()}`} className={active===n.toLowerCase()?'active':''}>{n}</a>)}</nav><span className="header-note">Seoul, KR <span className="status-dot"/></span></header>
+ <main id="top"><ScrollGallery onOpen={open} onPointerMove={e=>setCursor({x:e.clientX,y:e.clientY,visible:e.pointerType==='mouse'})} onPointerLeave={()=>setCursor(c=>({...c,visible:false}))}/>
  <section id="about" className="about"><div className="ghost-type" aria-hidden="true">TOGETHER, BETTER.</div><div className="section-bar"><h2>Our Approach</h2><span>기획과 디자인 사이, 경계를 넘어</span></div><div className="about-content reveal"><p className="eyebrow">THINK TOGETHER. MAKE BETTER.</p><h2>좋은 질문을 나누고,<br/>하나의 경험을 만듭니다<span>.</span></h2><p>기획은 방향을 찾고, 디자인은 가능성을 구체화합니다.<br/>루트포는 처음부터 끝까지 함께 고민하며<br/>서비스에 꼭 필요한 답을 찾아갑니다.</p></div><div className="process">{[['Understand','문제 이해','사용자와 비즈니스의 맥락을 읽습니다.'],['Structure','구조 설계','복잡함을 정리하고 흐름을 만듭니다.'],['Design','디자인','명확한 구조를 감각적인 경험으로.'],['Refine','검토','직접 사용하고, 더 나은 답을 찾습니다.']].map((a,i)=><div key={a[0]}><span className="process-num">0{i+1} <span>↗</span></span><h3>{a[0]}</h3><h4>{a[1]}</h4><p>{a[2]}</p></div>)}</div></section>
  <section id="lab" className="lab"><div className="section-bar"><h2>Lab / Notes <sup>(03)</sup></h2><span>더 나은 경험을 위한 작은 탐구</span><span className="example">예시 콘텐츠</span></div><div className="notes">{notes.map((n,i)=><button className="note reveal" key={n.tag} onClick={()=>open(n)}><div className={`note-art ${n.art}`} aria-hidden="true">{i===0?<><span>Human</span><i>×</i><span>AI</span></>:i===1?<><i/><i/><i/></>:<span>Why?</span>}<b>↗</b></div><span className="note-tag">{n.tag} <span>EXAMPLE / 0{i+1}</span></span><h3>{n.title}</h3><p>{n.text}</p></button>)}</div></section>
  <section id="contact" className="contact"><div className="contact-heading"><span className="eyebrow">LET’S MAKE SOMETHING MEANINGFUL</span><span className="status-dot"/></div><p>만들고 싶은 서비스나<br/>현재 고민을 알려주세요.</p><button className="contact-cta" onClick={()=>setContact(!contact)}>함께 시작하기 <span>↗</span></button>{contact&&<Contact close={()=>setContact(false)}/>}<div className="contact-foot"><span>새로운 가능성은 대화에서 시작됩니다.</span><span>PROJECT INQUIRY</span></div></section></main>
