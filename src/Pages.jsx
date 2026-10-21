@@ -135,7 +135,13 @@ function WorkPage() {
                     src={`/projects/${p.id}.webp`}
                     alt={`${p.brand} UI 목업`}
                     width="2400"
-                    height="1650"
+                    height={
+                      p.imageSize
+                        ? Math.round(
+                            (2400 * p.imageSize.height) / p.imageSize.width,
+                          )
+                        : 1650
+                    }
                     loading="lazy"
                   />
                   <span>VIEW PROJECT ↗</span>

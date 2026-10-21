@@ -1,0 +1,252 @@
+/* Root4 opening showcase: one lead, two readable supporting works, three edge previews.
+   No change to the scroll timeline, project entrances, pointer behavior or article actions. */
+.gallery-heading {
+  top: 115px;
+  right: auto;
+  width: 57%;
+}
+.gallery-heading .eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.35px;
+  margin-bottom: 20px;
+}
+.gallery-heading h1 {
+  font-size: clamp(28px, 2.8vw, 50px);
+  letter-spacing: -0.065em;
+  line-height: 1.4;
+  font-weight: 500;
+}
+.showcase-intro {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #676d60;
+  margin: 17px 0 0;
+  letter-spacing: -0.02em;
+}
+.scene-card {
+  box-shadow: 0 14px 35px -22px #20241e45;
+}
+.scene-card[data-project="connect"] {
+  box-shadow: 0 18px 48px -24px #3c33274d;
+}
+.scene-card[data-project="fino"] .scene-project-button img {
+  object-position: 84% 50%;
+}
+.scene-card[data-project="form"] .scene-project-button img {
+  object-position: 70% 50%;
+}
+.overview-caption {
+  z-index: 7;
+  font-size: 11px;
+  line-height: 1.3;
+}
+.overview-caption > span:last-child {
+  display: none;
+}
+.overview-caption b {
+  font-size: 9px;
+  color: #a54a35;
+}
+.overview-caption small {
+  font-size: 11px;
+  margin-top: 5px;
+  color: #333c30;
+}
+.overview-caption em {
+  font-size: 9px;
+  margin-top: 4px;
+}
+.overview-caption[data-project="connect"] > span:first-child {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 20px;
+  width: 100%;
+  font-size: 13px;
+}
+.overview-caption[data-project="connect"] b {
+  font-size: 10px;
+}
+.overview-caption[data-project="connect"] small {
+  margin: 0;
+  font-size: 13px;
+}
+.overview-caption[data-project="connect"] em {
+  margin: 0;
+  grid-column: 2;
+  font-size: 10px;
+}
+.overview-caption[data-project="ondo"] {
+  font-size: 10px;
+}
+.overview-caption[data-project="ondo"] small,
+.overview-caption[data-project="ondo"] em,
+.overview-caption[data-project="orbit"],
+.overview-caption[data-project="form"],
+.overview-caption[data-project="wayve"] {
+  display: none;
+}
+.gallery-bottom::before {
+  content: "";
+  position: absolute;
+  inset: -3px -4.6vw -23px;
+  z-index: -1;
+  background: #f5f4f0;
+  opacity: var(--overview-opacity);
+  pointer-events: none;
+}
+.gallery-overview-note {
+  bottom: 75px;
+  font-size: 8px;
+}
+@media (max-height: 800px) and (min-width: 768px) {
+  .gallery-heading {
+    top: 107px;
+  }
+  .gallery-heading .eyebrow {
+    font-size: 7px;
+    margin-bottom: 12px;
+  }
+  .gallery-heading h1 {
+    font-size: clamp(26px, 2.5vw, 35px);
+    line-height: 1.4;
+  }
+  .showcase-intro {
+    font-size: 10px;
+    margin-top: 12px;
+  }
+  .overview-caption[data-project="connect"] > span:first-child {
+    gap: 4px 13px;
+    font-size: 11px;
+  }
+  .overview-caption[data-project="connect"] small {
+    font-size: 11px;
+  }
+  .overview-caption[data-project="connect"] em {
+    font-size: 9px;
+  }
+}
+@media (max-width: 1100px) and (min-width: 768px) {
+  .gallery-heading .eyebrow {
+    letter-spacing: 0.65px;
+    font-size: 6px;
+  }
+  .showcase-intro {
+    max-width: 340px;
+    font-size: 9px;
+  }
+  .overview-caption[data-project="connect"] small {
+    font-size: 10px;
+  }
+  .overview-caption[data-project="connect"] em {
+    font-size: 8px;
+  }
+}
+.scene-card[data-project] .scene-project-button .opening-art {
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  width: var(--opening-width);
+  height: var(--opening-height);
+  transform: translate(-50%, -50%)
+    scale(var(--opening-scale-x), var(--opening-scale-y));
+  object-fit: cover;
+  object-position: center;
+  opacity: clamp(0, calc(var(--overview-opacity) * 1000), 1);
+  transition: none;
+}
+.scene-card[data-project="connect"] .opening-art {
+  background: #fffaf4;
+}
+.scene-card[data-project="fino"] .opening-art {
+  background: #4246dc;
+}
+.scene-card[data-project="ondo"] .opening-art {
+  background: #111a1c;
+}
+.overview-caption strong {
+  font-weight: 500;
+}
+.overview-caption[data-project="connect"] > span:first-child {
+  grid-template-columns: 20px 1fr;
+  gap: 3px 10px;
+}
+.overview-caption[data-project="connect"] b {
+  grid-row: 1 / 4;
+}
+.overview-caption[data-project="connect"] small,
+.overview-caption[data-project="connect"] em {
+  grid-column: 2;
+}
+.showcase-disclaimer {
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.7px;
+  color: #646b5f;
+  margin: 15px 0 0;
+}
+.showcase-disclaimer span {
+  margin-left: 15px;
+  font-weight: 400;
+  letter-spacing: 0.1px;
+}
+@media (max-height: 800px) and (min-width: 768px) {
+  .showcase-disclaimer {
+    font-size: 7px;
+    margin-top: 12px;
+  }
+}
+@media (max-height: 719px) and (min-width: 768px) {
+  .gallery-heading {
+    top: 96px;
+  }
+  .gallery-heading .eyebrow {
+    font-size: 6px;
+    margin-bottom: 8px;
+  }
+  .gallery-heading h1 {
+    font-size: clamp(22px, 2.5vw, 30px);
+    line-height: 1.3;
+  }
+  .showcase-intro {
+    font-size: 9px;
+    margin-top: 8px;
+  }
+  .showcase-disclaimer {
+    font-size: 7px;
+    margin-top: 8px;
+  }
+  .overview-caption[data-project="fino"] {
+    font-size: 9px;
+  }
+  .overview-caption[data-project="fino"] small {
+    font-size: 9px;
+  }
+  .overview-caption[data-project="fino"] em {
+    font-size: 7px;
+  }
+}
+/* Reuse the existing hover enlargement; no additional pointer interaction. */
+.scene-card[data-project] .scene-project-button .opening-art {
+  scale: var(--hover-zoom, 1);
+  transition: scale 0.2s cubic-bezier(0.2, 0.6, 0.3, 1);
+}
+.overview-caption[data-project="connect"] > span:first-child {
+  grid-template-columns: 20px 1fr auto;
+  gap: 4px 10px;
+}
+.overview-caption[data-project="connect"] b {
+  grid-row: 1 / 3;
+}
+.overview-caption[data-project="connect"] strong {
+  grid-column: 2;
+  grid-row: 1;
+}
+.overview-caption[data-project="connect"] em {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: center;
+}
+.overview-caption[data-project="connect"] small {
+  grid-column: 2 / 4;
+  grid-row: 2;
+}

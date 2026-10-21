@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { projects } from "./data";
 import "./gallery.css";
+import "./opening.css";
 
 import FeatureDetail from "./FeatureDetail";
 import {
@@ -36,52 +37,14 @@ const colors = [
   "#d5c7b4",
   "#c7d4be",
 ];
-// Deliberately composed coordinates, ratios, angles and depths rather than a grid.
+// Opening art direction only. The existing scroll clock, project order and target remain unchanged.
 const composition = [
-  { x: 0.035, y: 0.245, w: 0.305, h: 0.272, angle: -3.5, depth: 0.7 },
-  { x: 0.425, y: 0.145, w: 0.155, h: 0.385, angle: 4, depth: 1.5 },
-  { x: 0.705, y: 0.147, w: 0.255, h: 0.275, angle: -4, depth: 0.9 },
-  { x: 0.085, y: 0.655, w: 0.235, h: 0.205, angle: 2.5, depth: 1.15 },
-  { x: 0.405, y: 0.66, w: 0.235, h: 0.215, angle: -2.5, depth: 0.8 },
-  { x: 0.765, y: 0.535, w: 0.155, h: 0.315, angle: 4.5, depth: 1.6 },
-];
-const fragments = [
-  {
-    project: "connect",
-    x: 0.335,
-    y: 0.305,
-    w: 0.07,
-    h: 0.085,
-    depth: 1.8,
-    angle: 6,
-  },
-  {
-    project: "fino",
-    x: 0.605,
-    y: 0.25,
-    w: 0.07,
-    h: 0.165,
-    depth: 0.55,
-    angle: -7,
-  },
-  {
-    project: "orbit",
-    x: 0.625,
-    y: 0.49,
-    w: 0.105,
-    h: 0.13,
-    depth: 1.3,
-    angle: 5,
-  },
-  {
-    project: "form",
-    x: 0.965,
-    y: 0.645,
-    w: 0.12,
-    h: 0.17,
-    depth: 0.7,
-    angle: -8,
-  },
+  { x: 0.285, y: 0.38, w: 0.555, h: 0.49, angle: 0, depth: 0.7, layer: 6 },
+  { x: 0.045, y: 0.43, w: 0.205, h: 0.39, angle: -1.8, depth: 1.5, layer: 4 },
+  { x: 0.665, y: 0.14, w: 0.29, h: 0.23, angle: 0, depth: 0.9, layer: 3 },
+  { x: 0.945, y: 0.44, w: 0.3, h: 0.25, angle: 0, depth: 1.15, layer: 1 },
+  { x: 0.87, y: 0.705, w: 0.26, h: 0.3, angle: -2, depth: 0.8, layer: 2 },
+  { x: -0.18, y: 0.48, w: 0.215, h: 0.31, angle: 0, depth: 1.6, layer: 0 },
 ];
 function useSimpleView() {
   const [simple, setSimple] = useState(
@@ -113,7 +76,6 @@ export default function ScrollGallery({
     stage = useRef(null);
   const cards = useRef([]),
     captions = useRef([]),
-    pieces = useRef([]),
     panels = useRef([]);
   const timeline = useRef({
     unit: 1,
@@ -285,7 +247,7 @@ export default function ScrollGallery({
         const angle = tile.angle * (1 - expansion);
         card.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${angle}deg) scale(${sx}, ${sy})`;
         card.style.opacity = opacity;
-        card.style.zIndex = expansion > 0 && exit < 1 ? 10 + i : i;
+        card.style.zIndex = expansion > 0 && exit < 1 ? 10 + i : tile.layer;
         const accessible =
           opacity > 0.75 &&
           activeSection === "work" &&
@@ -293,6 +255,10 @@ export default function ScrollGallery({
         card.style.pointerEvents = accessible ? "auto" : "none";
         card.inert = !accessible;
         card.setAttribute("aria-hidden", !accessible);
+        card.style.setProperty("--opening-width", `${target.w * sx}px`);
+        card.style.setProperty("--opening-height", `${target.h * sy}px`);
+        card.style.setProperty("--opening-scale-x", 1 / sx);
+        card.style.setProperty("--opening-scale-y", 1 / sy);
         card.style.setProperty("--counter-x", Math.max(sx, sy) / sx);
         card.style.setProperty("--counter-y", Math.max(sx, sy) / sy);
         card.style.setProperty("--tilt-x", `${-p.y * 3 * overview}deg`);
@@ -317,14 +283,9 @@ export default function ScrollGallery({
         );
         card.style.setProperty("--corner-opacity", expansion);
         const caption = captions.current[i];
-        caption.style.transform = `translate3d(${tile.x + p.x * 22 * tile.depth * overview}px, ${tile.y + tile.h + 16 + p.y * 16 * tile.depth * overview}px, 0)`;
+        caption.style.transform = `translate3d(${tile.x + p.x * 22 * tile.depth * overview}px, ${(i === 2 ? tile.y - 25 : tile.y + tile.h + 16) + p.y * 16 * tile.depth * overview}px, 0)`;
         caption.style.width = `${tile.w}px`;
         caption.style.opacity = overview;
-      });
-      pieces.current.forEach((piece, i) => {
-        const tile = fragments[i];
-        piece.style.transform = `translate3d(${width * tile.x + p.x * 28 * tile.depth - local * (i % 2 ? -65 : 50)}px, ${height * tile.y + p.y * 20 * tile.depth - local * 80 * tile.depth}px, 0) rotate(${tile.angle}deg)`;
-        piece.style.opacity = overview * 0.85;
       });
       panels.current.forEach((panel, i) => {
         const start = chapters[names[i]];
@@ -393,9 +354,21 @@ export default function ScrollGallery({
         return {
           ...t,
           x: width * t.x,
-          y: height * t.y - (i >= 3 ? Math.max(0, 850 - height) * 0.25 : 0),
+          y: i === 2 ? Math.max(112, height * t.y) : height * t.y,
           w: width * t.w,
-          h: height * t.h,
+          h:
+            i === 0
+              ? Math.min(height * t.h, height - height * t.y - 126)
+              : i === 1 && height < 720
+                ? height * 0.36
+                : i === 2
+                  ? Math.min(
+                      height * t.h,
+                      height * composition[0].y -
+                        Math.max(112, height * t.y) -
+                        16,
+                    )
+                  : height * t.h,
         };
       });
       const h = Math.max(200, Math.min(height - 276, (width * 0.82) / 1.65));
@@ -406,10 +379,6 @@ export default function ScrollGallery({
       cards.current.forEach((card) => {
         card.style.width = `${target.w}px`;
         card.style.height = `${target.h}px`;
-      });
-      pieces.current.forEach((piece, i) => {
-        piece.style.width = `${width * fragments[i].w}px`;
-        piece.style.height = `${height * fragments[i].h}px`;
       });
       update();
     };
@@ -499,8 +468,8 @@ export default function ScrollGallery({
                     <img
                       src={`/projects/${p.id}.webp`}
                       alt={`${p.brand} UI 목업`}
-                      width="1600"
-                      height="1100"
+                      width={p.imageSize?.width || 1600}
+                      height={p.imageSize?.height || 1100}
                       loading={i > 1 ? "lazy" : "eager"}
                     />
                     <span>0{i + 1} / 06 ↗</span>
@@ -531,9 +500,6 @@ export default function ScrollGallery({
         data-section={section}
       >
         <div className="work-world">
-          <div className="gallery-background" aria-hidden="true">
-            Root4
-          </div>
           <div className="gallery-heading">
             <div>
               <p className="eyebrow">
@@ -545,20 +511,18 @@ export default function ScrollGallery({
                 <br />
                 디자인으로 완성합니다.
               </h1>
+              <p className="showcase-intro">
+                기획과 디자인을 연결해, 더 나은 디지털 경험을 만듭니다.
+              </p>
+              <p className="showcase-disclaimer">
+                SELECTED WORK 06 <span>구성 예시 · CONCEPT PROJECTS</span>
+              </p>
             </div>
             <p>
               기획에서 디자인까지.
               <br />
               서로 다른 관점으로, 하나의 경험을.
             </p>
-          </div>
-          <div className="collage-caption" aria-hidden="true">
-            <span>
-              Ideas in
-              <br />
-              <i>motion.</i>
-            </span>
-            <small>Root4, SEOUL.</small>
           </div>
           <div className="gallery-topline">
             <span>
@@ -571,6 +535,7 @@ export default function ScrollGallery({
               <React.Fragment key={p.id}>
                 <article
                   className="scene-card"
+                  data-project={p.id}
                   ref={(el) => (cards.current[i] = el)}
                   style={{
                     background: colors[i],
@@ -589,10 +554,23 @@ export default function ScrollGallery({
                       <img
                         src={`/projects/${p.id}.webp`}
                         alt={`${p.brand} ${p.type} UI 목업`}
-                        width="1600"
-                        height="1100"
+                        width={p.imageSize?.width || 1600}
+                        height={p.imageSize?.height || 1100}
                         loading={i > 1 ? "lazy" : "eager"}
+                        fetchPriority={i === 0 ? "high" : "auto"}
                       />
+                      {p.opening && (
+                        <img
+                          className="opening-art"
+                          src={`/projects/${p.id}-opening.webp`}
+                          alt=""
+                          aria-hidden="true"
+                          loading="eager"
+                          fetchPriority={i === 0 ? "high" : "auto"}
+                          width={p.opening.width}
+                          height={p.opening.height}
+                        />
+                      )}
                       <span className="inspection-reticle" aria-hidden="true">
                         <i />
                         <i />
@@ -618,11 +596,12 @@ export default function ScrollGallery({
                 </article>
                 <div
                   className="overview-caption"
+                  data-project={p.id}
                   ref={(el) => (captions.current[i] = el)}
                   aria-hidden="true"
                 >
                   <span>
-                    <b>0{i + 1}</b> {p.brand}
+                    <b>0{i + 1}</b> <strong>{p.brand}</strong>
                     <small>{p.name}</small>
                     <em>{p.scope}</em>
                   </span>
@@ -631,26 +610,6 @@ export default function ScrollGallery({
               </React.Fragment>
             ))}
           </div>
-          {fragments.map((f, i) => (
-            <div
-              className={`collage-fragment fragment-${i}`}
-              ref={(el) => (pieces.current[i] = el)}
-              key={i}
-              aria-hidden="true"
-            >
-              <img src={`/projects/${f.project}.webp`} alt="" />
-              <span>
-                {
-                  [
-                    "UX RESEARCH",
-                    "DESIGN SYSTEM",
-                    "WORK IN PROGRESS",
-                    "MATERIAL STUDY",
-                  ][i]
-                }
-              </span>
-            </div>
-          ))}
           <div
             className="gallery-caption"
             aria-live="polite"
@@ -685,7 +644,6 @@ export default function ScrollGallery({
               visible={detailsVisible}
             />
           )}
-          <p className="gallery-overview-note">구성 예시 · CONCEPT PROJECTS</p>
           <div className="gallery-bottom">
             <button
               className="overview-toggle"

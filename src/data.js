@@ -1,6 +1,7 @@
 export const projects = [
   {
     id: "connect",
+    imageSize: { width: 1600, height: 970 },
     category: "web",
     name: "일상과 연결되는 새로운 방식",
     brand: "Connect",
@@ -17,6 +18,7 @@ export const projects = [
   },
   {
     id: "fino",
+    opening: { width: 800, height: 1000 },
     category: "app",
     name: "금융의 다음을, 더 가깝게",
     brand: "Fino",
@@ -33,6 +35,7 @@ export const projects = [
   },
   {
     id: "ondo",
+    opening: { width: 1600, height: 900 },
     category: "tv",
     name: "취향이 머무는 화면",
     brand: "Ondo",
@@ -49,6 +52,7 @@ export const projects = [
   },
   {
     id: "orbit",
+    opening: { width: 1600, height: 1100 },
     category: "web",
     name: "함께 일하는 더 나은 흐름",
     brand: "Orbit",
@@ -65,6 +69,7 @@ export const projects = [
   },
   {
     id: "form",
+    opening: { width: 1200, height: 900 },
     category: "web",
     name: "좋은 물건을 만나는 감각",
     brand: "Form & Field",
@@ -81,6 +86,7 @@ export const projects = [
   },
   {
     id: "wayve",
+    opening: { width: 1600, height: 1100 },
     category: "app",
     name: "이동의 순간을 가볍게",
     brand: "Wayve",

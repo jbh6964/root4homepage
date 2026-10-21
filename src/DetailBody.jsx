@@ -15,8 +15,8 @@ export default function DetailBody({ item, heading = "h2" }) {
           <img
             className="detail-image"
             src={`/projects/${item.id}.svg`}
-            width="1600"
-            height="1100"
+            width={item.imageSize?.width || 1600}
+            height={item.imageSize?.height || 1100}
             alt={`${item.brand} UI 디자인 목업`}
           />
           <div className="detail-columns">
